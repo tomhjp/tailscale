@@ -1,14 +1,7 @@
 name: Build cigocacher
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: Branch, commit or tag to build from
-        required: true
 
 jobs:
   build:
@@ -21,7 +14,7 @@ jobs:
     - name: checkout
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       with:
-        ref: ${{ inputs.ref || github.ref }}
+        ref: ${{ github.sha }}
 
     - name: test
       run: go test ./cmd/cigocacher/...
@@ -34,23 +27,24 @@ jobs:
         CGO_ENABLED: ""
 
     - name: archive
-      run: tar -zcf ${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz cigocacher
+      run: tar -zcf cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz cigocacher
 
     - name: save
       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0 
       with:
-        name: ${{ matrix.GOOS }}-${{ matrix.GOARCH }}
-        path: ${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz
+        name: cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
+        path: cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz
 
   release:
     runs-on: ubuntu-24.04
-    needs:
-      - build
+    needs: build
+    permissions:
+      contents: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
-          pattern: '*'
+          pattern: 'cigocacher-*'
           merge-multiple: true
       - name: Create release and upload assets
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
@@ -62,11 +56,11 @@ jobs:
             const { data: release } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: `build-${{ inputs.ref || github.sha }}`,
-              name: `${{ inputs.ref || github.sha }}`,
+              tag_name: `build-${{ github.sha }}`,
+              name: `${{ github.sha }}`,
               draft: false,
               prerelease: true,
-              target_commitish: `${{ inputs.ref || github.sha }}`
+              target_commitish: `${{ github.sha }}`
             });
 
             const files = fs.readdirSync('.').filter(f => f.endsWith('.tar.gz'));
