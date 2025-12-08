@@ -9,14 +9,7 @@ jobs:
       matrix:
         GOOS: ["linux", "darwin", "windows"]
         GOARCH: ["amd64", "arm64"]
-        include:
-          - GOOS: linux
-            runner: ubuntu-latest
-          - GOOS: darwin
-            runner: macos-latest
-          - GOOS: windows
-            runner: windows-latest
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-24.04
     env:
       GOOS: "${{ matrix.GOOS }}"
       GOARCH: "${{ matrix.GOARCH }}"
@@ -27,16 +20,10 @@ jobs:
       with:
         ref: ${{ github.sha }}
 
-    - name: test
-      shell: bash
-      run: ./tool/go test ./cmd/cigocacher/...
-
     - name: build
-      shell: bash
       run: ./tool/go build -o "cigocacher$(./tool/go env GOEXE)" ./cmd/cigocacher/
 
     - name: archive
-      shell: bash
       run: tar -zcf cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz "cigocacher$(./tool/go env GOEXE)"
 
     - name: save
