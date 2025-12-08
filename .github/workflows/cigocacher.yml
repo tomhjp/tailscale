@@ -28,12 +28,15 @@ jobs:
         ref: ${{ github.sha }}
 
     - name: test
+      shell: bash
       run: ./tool/go test ./cmd/cigocacher/...
 
     - name: build
+      shell: bash
       run: ./tool/go build -o "cigocacher$(./tool/go env GOEXE)" ./cmd/cigocacher/
 
     - name: archive
+      shell: bash
       run: tar -zcf cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz "cigocacher$(./tool/go env GOEXE)"
 
     - name: save
