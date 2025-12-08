@@ -5,11 +5,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
     strategy:
       matrix:
         GOOS: ["linux", "darwin", "windows"]
         GOARCH: ["amd64", "arm64"]
+        include:
+          - GOOS: linux
+            runner: ubuntu-latest
+          - GOOS: darwin
+            runner: macos-latest
+          - GOOS: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    env:
+      GOOS: "${{ matrix.GOOS }}"
+      GOARCH: "${{ matrix.GOARCH }}"
+      CGO_ENABLED: ""
     steps:
     - name: checkout
       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -17,17 +28,13 @@ jobs:
         ref: ${{ github.sha }}
 
     - name: test
-      run: go test ./cmd/cigocacher/...
+      run: ./tool/go test ./cmd/cigocacher/...
 
     - name: build
-      run: go build -o cigocacher ./cmd/cigocacher/
-      env:
-        GOOS: "${{ matrix.GOOS }}"
-        GOARCH: "${{ matrix.GOARCH }}"
-        CGO_ENABLED: ""
+      run: ./tool/go build -o "cigocacher$(./tool/go env GOEXE)" ./cmd/cigocacher/
 
     - name: archive
-      run: tar -zcf cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz cigocacher
+      run: tar -zcf cigocacher-${{ matrix.GOOS }}-${{ matrix.GOARCH }}.tar.gz "cigocacher$(./tool/go env GOEXE)"
 
     - name: save
       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0 
