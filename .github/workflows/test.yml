@@ -21,15 +21,7 @@ env:
   GOMODCACHE: ${{ github.workspace }}/gomodcache
 
 on:
-  push:
-    branches:
-      - "main"
-      - "release-branch/*"
-  pull_request:
-    # all PRs on all branches
-  merge_group:
-    branches:
-      - "main"
+  workflow_dispatch:
 
 concurrency:
   # For PRs, later CI runs preempt previous ones. e.g. a force push on a PR
@@ -285,7 +277,6 @@ jobs:
 
   win-tool-go:
     runs-on: windows-latest
-    needs: gomod-cache
     name: Windows (win-tool-go)
     steps:
     - name: checkout
