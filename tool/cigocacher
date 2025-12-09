@@ -28,7 +28,9 @@ cachedir="$HOME/.cache/tailscale-cigocacher"
         got_rev=$("${cachedir}/cigocacher" --version)
     fi
 
-    platform="$(NOBASHDEBUG=true ./tool/go env GOOS)-$(NOBASHDEBUG=true ./tool/go env GOARCH)"
+    export NOBASHDEBUG=true
+    export NOPWSHDEBUG=true
+    platform="$(./tool/go env GOOS)-$(./tool/go env GOARCH)"
 
     if [[ "$want_rev" != "$got_rev" ]]; then
         rm -rf "$cachedir" "$tarball"
@@ -39,4 +41,4 @@ cachedir="$HOME/.cache/tailscale-cigocacher"
     fi
 )
 
-exec "${cachedir}/cigocacher$(NOBASHDEBUG=true ./tool/go env GOEXE)" "$@"
+exec "${cachedir}/cigocacher$(./tool/go env GOEXE)" "$@"
