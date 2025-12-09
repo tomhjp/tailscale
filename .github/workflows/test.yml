@@ -295,6 +295,9 @@ jobs:
     - name: test-tool-go
       working-directory: src
       run: ./tool/go version
+    - name: test-tool-cigocacher
+      working-directory: src
+      run: ./tool/cigocacher --version
 
   privileged:
     needs: gomod-cache
