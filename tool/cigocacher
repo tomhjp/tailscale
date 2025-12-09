@@ -21,8 +21,7 @@ cachedir="$HOME/.cache/tailscale-cigocacher"
 
     tarball="${cachedir}.tar.gz"
 
-    read -r want_rev < "./tool/cigocacher.rev"
-
+    want_rev="$(tr -d '\r' < "./tool/cigocacher.rev")"
     got_rev=""
     if [[ -x "${cachedir}/cigocacher" ]]; then
         got_rev=$("${cachedir}/cigocacher" --version)
