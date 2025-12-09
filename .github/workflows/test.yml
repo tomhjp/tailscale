@@ -46,3 +46,6 @@ jobs:
     - name: test-tool-cigocacher
       working-directory: src
       run: ./tool/cigocacher --version
+    - name: test cached
+      working-directory: src
+      run: ./tool/cigocacher --version
