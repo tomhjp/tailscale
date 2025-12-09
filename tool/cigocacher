@@ -15,7 +15,8 @@ cachedir="$HOME/.cache/tailscale-cigocacher"
         set -x
     fi
 
-    repo_root="${BASH_SOURCE%/*}/../"
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    repo_root="${SCRIPT_DIR}/../"
     cd "$repo_root"
 
     tarball="${cachedir}.tar.gz"
