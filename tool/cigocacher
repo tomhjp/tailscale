@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#
+# Run cmd/cigocacher based on the revision pinned in tool/cigocacher.rev
+
+set -euo pipefail
+
+if [[ "${CI:-}" == "true" ]]; then
+    set -x
+fi
+
+cachedir="$HOME/.cache/tailscale-cigocacher"
+
+(
+    if [[ "${CI:-}" == "true" ]]; then
+        set -x
+    fi
+
+    repo_root="${BASH_SOURCE%/*}/../"
+    cd "$repo_root"
+
+    tarball="${cachedir}.tar.gz"
+
+    read -r want_rev < "./tool/cigocacher.rev"
+
+    got_rev=""
+    if [[ -x "${cachedir}/cigocacher" ]]; then
+        got_rev=$("${cachedir}/cigocacher" --version)
+    fi
+
+    platform="$(./tool/go env GOOS)-$(./tool/go env GOARCH)"
+
+    if [[ "$want_rev" != "$got_rev" ]]; then
+        rm -rf "$cachedir" "$tarball"
+        mkdir -p "$cachedir"
+        curl -f -L -o "$tarball" "https://github.com/tomhjp/tailscale/releases/download/cmd%2Fcigocacher%2F${want_rev}/cigocacher-${platform}.tar.gz"
+        (cd "$cachedir" && tar -xf "$tarball")
+        rm -f "$tarball"
+    fi
+)
+
+exec "${cachedir}/cigocacher$(./tool/go env GOEXE)" "$@"
