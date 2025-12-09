@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/debug"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -34,6 +36,7 @@ import (
 
 func main() {
 	var (
+		version       = flag.Bool("version", false, "print version and exit")
 		auth          = flag.Bool("auth", false, "auth with cigocached and exit, printing the access token as output")
 		token         = flag.String("token", "", "the cigocached access token to use, as created using --auth")
 		cigocachedURL = flag.String("cigocached-url", "", "optional cigocached URL (scheme, host, and port). empty means to not use one.")
@@ -41,6 +44,30 @@ func main() {
 		verbose       = flag.Bool("verbose", false, "enable verbose logging")
 	)
 	flag.Parse()
+
+	if *version {
+		info, ok := debug.ReadBuildInfo()
+		if !ok {
+			log.Fatal("no build info")
+		}
+		var (
+			rev   string
+			dirty bool
+		)
+		for _, s := range info.Settings {
+			switch s.Key {
+			case "vcs.revision":
+				rev = s.Value
+			case "vcs.modified":
+				dirty, _ = strconv.ParseBool(s.Value)
+			}
+		}
+		if dirty {
+			rev += "-dirty"
+		}
+		fmt.Println(rev)
+		return
+	}
 
 	if *auth {
 		if *cigocachedURL == "" {
